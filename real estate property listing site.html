@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DreamHomes PK - Find Your Home</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif;}
+body{background:#f8f9fa;color:#333;}
+header{background:linear-gradient(135deg,#667eea,#764ba2);color:white;text-align:center;padding:70px 20px;}
+header h1{font-size:42px;margin-bottom:10px;}
+.search-box{background:white;max-width:900px;margin:-40px auto 40px;padding:20px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.15);display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;}
+.search-box input,.search-box select,.search-box button{padding:12px;border:1px solid #ddd;border-radius:8px;font-size:15px;}
+.search-box button{background:#667eea;color:white;border:none;cursor:pointer;font-weight:bold;}
+.container{max-width:1200px;margin:auto;padding:0 20px;}
+.properties{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:25px;}
+.card{background:white;border-radius:12px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,0.1);transition:0.3s;}
+.card:hover{transform:translateY(-5px);box-shadow:0 8px 25px rgba(0,0,0,0.15);}
+.card img{width:100%;height:220px;object-fit:cover;}
+.card-content{padding:20px;}
+.card-content h3{margin-bottom:8px;color:#667eea;}
+.price{font-size:24px;font-weight:bold;color:#28a745;margin:10px 0;}
+.details{display:flex;gap:15px;color:#666;font-size:14px;margin-bottom:15px;}
+.details span{background:#f0f0f0;padding:5px 10px;border-radius:5px;}
+.contact-btn{background:#667eea;color:white;width:100%;padding:10px;border:none;border-radius:8px;cursor:pointer;}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:none;justify-content:center;align-items:center;z-index:1000;}
+.modal.active{display:flex;}
+.modal-content{background:white;padding:30px;border-radius:12px;max-width:500px;width:90%;}
+.modal-content input,.modal-content textarea{width:100%;padding:12px;margin:10px 0;border:1px solid #ddd;border-radius:8px;}
+.close{float:right;font-size:28px;cursor:pointer;color:#999;}
+@media(max-width:768px){.search-box{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Find Your Dream Home</h1>
+  <p>1000+ Properties in Karachi, Lahore, Islamabad</p>
+</header>
+
+<div class="search-box">
+  <input type="text" id="searchLocation" placeholder="Search by location...">
+  <select id="searchType">
+    <option value="all">All Types</option>
+    <option value="house">House</option>
+    <option value="apartment">Apartment</option>
+    <option value="plot">Plot</option>
+  </select>
+  <select id="searchPrice">
+    <option value="all">Any Price</option>
+    <option value="0-50">Under 50 Lac</option>
+    <option value="50-100">50-100 Lac</option>
+    <option value="100-500">100-500 Lac</option>
+    <option value="500+">Above 500 Lac</option>
+  </select>
+  <button onclick="filterProperties()">Search</button>
+</div>
+
+<div class="container">
+  <div class="properties" id="propertiesList"></div>
+</div>
+
+<div class="modal" id="contactModal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <h2>Contact Agent</h2>
+    <form id="contactForm">
+      <input type="text" placeholder="Your Name" required>
+      <input type="tel" placeholder="Phone Number" required>
+      <input type="email" placeholder="Email" required>
+      <textarea placeholder="Message" rows="4" required></textarea>
+      <button type="submit" class="contact-btn">Send Message</button>
+    </form>
+  </div>
+</div>
+
+<script>
+const properties = [
+  {id:1, title:"3 Bed House in DHA Phase 5", type:"house", price:180, location:"DHA Karachi", beds:3, baths:3, area:"240 sq yd", img:"https://picsum.photos/400/300?1"},
+  {id:2, title:"2 Bed Apartment in Gulshan", type:"apartment", price:85, location:"Gulshan Karachi", beds:2, baths:2, area:"1200 sq ft", img:"https://picsum.photos/400/300?2"},
+  {id:3, title:"10 Marla Plot in Bahria Town", type:"plot", price:120, location:"Bahria Lahore", beds:0, baths:0, area:"10 Marla", img:"https://picsum.photos/400/300?3"},
+  {id:4, title:"5 Bed Villa in E-11", type:"house", price:650, location:"E-11 Islamabad", beds:5, baths:5, area:"500 sq yd", img:"https://picsum.photos/400/300?4"},
+  {id:5, title:"1 Bed Studio in Clifton", type:"apartment", price:45, location:"Clifton Karachi", beds:1, baths:1, area:"650 sq ft", img:"https://picsum.photos/400/300?5"},
+  {id:6, title:"1 Kanal Plot in DHA Lahore", type:"plot", price:420, location:"DHA Lahore", beds:0, baths:0, area:"1 Kanal", img:"https://picsum.photos/400/300?6"}
+];
+
+function displayProperties(items){
+  document.getElementById('propertiesList').innerHTML = items.map(p => `
+    <div class="card">
+      <img src="${p.img}" alt="${p.title}">
+      <div class="card-content">
+        <h3>${p.title}</h3>
+        <p style="color:#666;">${p.location}</p>
+        <div class="price">${p.price} Lac PKR</div>
+        <div class="details">
+          ${p.beds? `<span>${p.beds} Bed</span>` : ''}
+          ${p.baths? `<span>${p.baths} Bath</span>` : ''}
+          <span>${p.area}</span>
+        </div>
+        <button class="contact-btn" onclick="openModal('${p.title}')">Contact Agent</button>
+      </div>
+    </div>
+  `).join('');
+}
+displayProperties(properties);
+
+function filterProperties(){
+  let location = document.getElementById('searchLocation').value.toLowerCase();
+  let type = document.getElementById('searchType').value;
+  let priceRange = document.getElementById('searchPrice').value;
+
+  let filtered = properties.filter(p => {
+    let matchLocation = p.location.toLowerCase().includes(location);
+    let matchType = type==='all' || p.type===type;
+    let matchPrice = true;
+
+    if(priceRange==='0-50') matchPrice = p.price<50;
+    if(priceRange==='50-100') matchPrice = p.price>=50 && p.price<=100;
+    if(priceRange==='100-500') matchPrice = p.price>100 && p.price<=500;
+    if(priceRange==='500+') matchPrice = p.price>500;
+
+    return matchLocation && matchType && matchPrice;
+  });
+
+  displayProperties(filtered);
+}
+
+function openModal(propertyTitle){
+  document.getElementById('contactModal').classList.add('active');
+  document.querySelector('#contactForm textarea').value = `Hi, I'm interested in ${propertyTitle}`;
+}
+
+function closeModal(){
+  document.getElementById('contactModal').classList.remove('active');
+}
+
+document.getElementById('contactForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  alert('Message sent! Agent will contact you soon.');
+  closeModal();
+  this.reset();
+});
+</script>
+
+</body>
+</html>

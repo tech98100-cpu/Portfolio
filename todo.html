@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>My Tasks</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    const styles = {
+      app: {
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "flex-start",
+        justifyContent: "center",
+        padding: "3rem 1rem",
+        fontFamily: "'Segoe UI', sans-serif",
+      },
+      card: {
+        background: "#fff",
+        borderRadius: "24px",
+        boxShadow: "0 25px 60px rgba(0,0,0,0.2)",
+        width: "100%",
+        maxWidth: "520px",
+        padding: "2.5rem",
+      },
+      header: { marginBottom: "2rem" },
+      title: { fontSize: "2rem", fontWeight: 800, color: "#1a1a2e", margin: 0, letterSpacing: "-0.5px" },
+      subtitle: { fontSize: "0.85rem", color: "#9ca3af", marginTop: "0.3rem" },
+      inputRow: { display: "flex", gap: "0.75rem", marginBottom: "2rem" },
+      input: {
+        flex: 1, padding: "0.85rem 1.2rem", borderRadius: "12px",
+        border: "2px solid #e5e7eb", fontSize: "0.95rem", outline: "none",
+        transition: "border-color 0.2s", color: "#1a1a2e",
+      },
+      addBtn: {
+        background: "linear-gradient(135deg, #667eea, #764ba2)", color: "#fff",
+        border: "none", borderRadius: "12px", padding: "0.85rem 1.4rem",
+        fontSize: "1.4rem", cursor: "pointer", fontWeight: 700,
+        transition: "transform 0.15s, opacity 0.15s", lineHeight: 1,
+      },
+      filters: { display: "flex", gap: "0.5rem", marginBottom: "1.5rem" },
+      filterBtn: (active) => ({
+        padding: "0.45rem 1.1rem", borderRadius: "999px", border: "none",
+        fontSize: "0.8rem", fontWeight: 600, cursor: "pointer",
+        background: active ? "linear-gradient(135deg, #667eea, #764ba2)" : "#f3f4f6",
+        color: active ? "#fff" : "#6b7280", transition: "all 0.2s",
+      }),
+      list: { display: "flex", flexDirection: "column", gap: "0.75rem" },
+      todoItem: (done) => ({
+        display: "flex", alignItems: "center", gap: "0.85rem",
+        padding: "1rem 1.2rem", borderRadius: "14px",
+        background: done ? "#f9fafb" : "#fff",
+        border: `2px solid ${done ? "#e5e7eb" : "#ede9fe"}`,
+        transition: "all 0.2s",
+      }),
+      checkbox: (done) => ({
+        width: "22px", height: "22px", borderRadius: "50%",
+        border: `2px solid ${done ? "#667eea" : "#d1d5db"}`,
+        background: done ? "linear-gradient(135deg, #667eea, #764ba2)" : "transparent",
+        cursor: "pointer", flexShrink: 0,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        transition: "all 0.2s",
+      }),
+      checkmark: { color: "#fff", fontSize: "0.7rem", fontWeight: 800 },
+      todoText: (done) => ({
+        flex: 1, fontSize: "0.95rem",
+        color: done ? "#9ca3af" : "#1a1a2e",
+        textDecoration: done ? "line-through" : "none",
+        transition: "all 0.2s",
+      }),
+      deleteBtn: {
+        background: "none", border: "none", color: "#d1d5db",
+        fontSize: "1.2rem", cursor: "pointer", padding: "0.2rem 0.4rem",
+        borderRadius: "8px", transition: "all 0.2s", lineHeight: 1,
+      },
+      empty: { textAlign: "center", padding: "2.5rem 0", color: "#9ca3af" },
+      emptyIcon: { fontSize: "2.5rem", marginBottom: "0.5rem" },
+      emptyText: { fontSize: "0.9rem" },
+      footer: {
+        marginTop: "1.5rem", display: "flex", justifyContent: "space-between",
+        alignItems: "center", fontSize: "0.8rem", color: "#9ca3af",
+      },
+      clearBtn: {
+        background: "none", border: "none", color: "#f87171",
+        fontSize: "0.8rem", cursor: "pointer", padding: 0, fontWeight: 600,
+      },
+    };
+
+    const FILTERS = ["All", "Active", "Completed"];
+
+    function TodoApp() {
+      const [todos, setTodos] = useState([
+        { id: 1, text: "Design the UI mockup", done: true },
+        { id: 2, text: "Build React components", done: false },
+        { id: 3, text: "Write unit tests", done: false },
+      ]);
+      const [input, setInput] = useState("");
+      const [filter, setFilter] = useState("All");
+
+      const add = () => {
+        const t = input.trim();
+        if (!t) return;
+        setTodos([{ id: Date.now(), text: t, done: false }, ...todos]);
+        setInput("");
+      };
+
+      const toggle = (id) => setTodos(todos.map(t => t.id === id ? { ...t, done: !t.done } : t));
+      const remove = (id) => setTodos(todos.filter(t => t.id !== id));
+      const clearDone = () => setTodos(todos.filter(t => !t.done));
+
+      const filtered = todos.filter(t =>
+        filter === "All" ? true : filter === "Active" ? !t.done : t.done
+      );
+      const remaining = todos.filter(t => !t.done).length;
+
+      return (
+        <div style={styles.app}>
+          <style>{`
+            @keyframes slideIn {
+              from { opacity: 0; transform: translateY(-8px); }
+              to   { opacity: 1; transform: translateY(0); }
+            }
+            input:focus { border-color: #667eea !important; }
+            .add-btn:hover { transform: scale(1.08); opacity: 0.92; }
+            .del-btn:hover { color: #f87171 !important; background: #fef2f2 !important; }
+            .todo-item:hover { box-shadow: 0 4px 15px rgba(102,126,234,0.12); }
+          `}</style>
+
+          <div style={styles.card}>
+            <div style={styles.header}>
+              <h1 style={styles.title}>My Tasks ✦</h1>
+              <p style={styles.subtitle}>{remaining} task{remaining !== 1 ? "s" : ""} remaining</p>
+            </div>
+
+            <div style={styles.inputRow}>
+              <input
+                style={styles.input}
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && add()}
+                placeholder="Add a new task..."
+              />
+              <button className="add-btn" style={styles.addBtn} onClick={add}>+</button>
+            </div>
+
+            <div style={styles.filters}>
+              {FILTERS.map(f => (
+                <button key={f} style={styles.filterBtn(filter === f)} onClick={() => setFilter(f)}>{f}</button>
+              ))}
+            </div>
+
+            <div style={styles.list}>
+              {filtered.length === 0 ? (
+                <div style={styles.empty}>
+                  <div style={styles.emptyIcon}>{filter === "Completed" ? "🎉" : "📝"}</div>
+                  <div style={styles.emptyText}>
+                    {filter === "Completed" ? "No completed tasks yet!" : "No tasks here. Add one above!"}
+                  </div>
+                </div>
+              ) : filtered.map(t => (
+                <div key={t.id} className="todo-item" style={styles.todoItem(t.done)}>
+                  <div style={styles.checkbox(t.done)} onClick={() => toggle(t.id)}>
+                    {t.done && <span style={styles.checkmark}>✓</span>}
+                  </div>
+                  <span style={styles.todoText(t.done)}>{t.text}</span>
+                  <button
+                    className="del-btn"
+                    style={styles.deleteBtn}
+                    onClick={() => remove(t.id)}
+                    title="Delete"
+                  >×</button>
+                </div>
+              ))}
+            </div>
+
+            {todos.some(t => t.done) && (
+              <div style={styles.footer}>
+                <span>{todos.filter(t => t.done).length} completed</span>
+                <button style={styles.clearBtn} onClick={clearDone}>Clear completed</button>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<TodoApp />);
+  </script>
+</body>
+</html>

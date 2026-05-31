@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TechZone Store</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif;}
+body{background:#f5f5f5;}
+header{background:#111;color:white;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;}
+header h1{font-size:24px;}
+.cart-btn{position:relative;background:#ff6b6b;border:none;color:white;padding:10px 15px;border-radius:8px;cursor:pointer;}
+.cart-count{position:absolute;top:-8px;right:-8px;background:yellow;color:black;border-radius:50%;padding:2px 6px;font-size:12px;font-weight:bold;}
+.container{max-width:1200px;margin:30px auto;padding:0 20px;}
+.filters{margin-bottom:20px;}
+.filters button{padding:8px 15px;margin:5px;border:none;background:white;border-radius:6px;cursor:pointer;}
+.filters button.active{background:#111;color:white;}
+.products{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px;}
+.product{background:white;padding:15px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+.product img{width:100%;height:180px;object-fit:cover;border-radius:8px;}
+.product h3{margin:10px 0;font-size:18px;}
+.product p{color:#ff6b6b;font-weight:bold;font-size:20px;}
+.product button{background:#111;color:white;width:100%;padding:10px;border:none;border-radius:6px;margin-top:10px;cursor:pointer;}
+.product button:hover{background:#333;}
+/* Cart Sidebar */
+.cart-sidebar{position:fixed;right:-400px;top:0;width:380px;height:100%;background:white;box-shadow:-2px 0 10px rgba(0,0,0,0.2);transition:0.3s;padding:20px;overflow-y:auto;z-index:200;}
+.cart-sidebar.open{right:0;}
+.cart-item{display:flex;gap:10px;margin-bottom:15px;border-bottom:1px solid #eee;padding-bottom:10px;}
+.cart-item img{width:60px;height:60px;object-fit:cover;border-radius:6px;}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;z-index:150;}
+.overlay.show{display:block;}
+.checkout-btn{background:#28a745;color:white;width:100%;padding:12px;border:none;border-radius:8px;font-size:16px;margin-top:15px;cursor:pointer;}
+.total{font-size:22px;font-weight:bold;margin-top:15px;text-align:right;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>TechZone</h1>
+  <button class="cart-btn" onclick="toggleCart()">
+    🛒 Cart <span class="cart-count" id="cartCount">0</span>
+  </button>
+</header>
+
+<div class="container">
+  <div class="filters">
+    <button class="active" onclick="filterProducts('all')">All</button>
+    <button onclick="filterProducts('headphones')">Headphones</button>
+    <button onclick="filterProducts('watch')">Smart Watch</button>
+    <button onclick="filterProducts('speaker')">Speaker</button>
+  </div>
+
+  <div class="products" id="products"></div>
+</div>
+
+<div class="overlay" id="overlay" onclick="toggleCart()"></div>
+<div class="cart-sidebar" id="cartSidebar">
+  <h2>Your Cart</h2>
+  <div id="cartItems"></div>
+  <div class="total" id="cartTotal">Total: $0</div>
+  <button class="checkout-btn" onclick="checkout()">Checkout with Stripe</button>
+</div>
+
+<script>
+// 1. Products Data
+const products = [
+  {id:1, name:"Wireless Headphones", price:25, cat:"headphones", img:"https://picsum.photos/300/200?1"},
+  {id:2, name:"Smart Watch Pro", price:40, cat:"watch", img:"https://picsum.photos/300/200?2"},
+  {id:3, name:"Bluetooth Speaker", price:18, cat:"speaker", img:"https://picsum.photos/300/200?3"},
+  {id:4, name:"Noise Cancelling Headphones", price:55, cat:"headphones", img:"https://picsum.photos/300/200?4"},
+  {id:5, name:"Fitness Watch", price:30, cat:"watch", img:"https://picsum.photos/300/200?5"},
+  {id:6, name:"Mini Speaker", price:12, cat:"speaker", img:"https://picsum.photos/300/200?6"}
+];
+
+let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+// 2. Display Products
+function displayProducts(items){
+  document.getElementById('products').innerHTML = items.map(p => `
+    <div class="product">
+      <img src="${p.img}" alt="${p.name}">
+      <h3>${p.name}</h3>
+      <p>$${p.price}</p>
+      <button onclick="addToCart(${p.id})">Add to Cart</button>
+    </div>
+  `).join('');
+}
+displayProducts(products);
+
+// 3. Filter
+function filterProducts(cat){
+  document.querySelectorAll('.filters button').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  if(cat==='all') displayProducts(products);
+  else displayProducts(products.filter(p => p.cat===cat));
+}
+
+// 4. Cart Functions
+function addToCart(id){
+  let item = cart.find(i => i.id===id);
+  if(item) item.qty++;
+  else cart.push({id, qty:1});
+  saveCart();
+  updateCartUI();
+}
+
+function removeFromCart(id){
+  cart = cart.filter(i => i.id!==id);
+  saveCart();
+  updateCartUI();
+}
+
+function saveCart(){
+  localStorage.setItem('cart', JSON.stringify(cart));
+}
+
+function updateCartUI(){
+  document.getElementById('cartCount').innerText = cart.reduce((s,i)=>s+i.qty,0);
+  let cartHTML = '';
+  let total = 0;
+  cart.forEach(i=>{
+    let p = products.find(p=>p.id===i.id);
+    total += p.price * i.qty;
+    cartHTML += `
+      <div class="cart-item">
+        <img src="${p.img}">
+        <div>
+          <h4>${p.name}</h4>
+          <p>$${p.price} x ${i.qty}</p>
+          <button onclick="removeFromCart(${p.id})" style="color:red;border:none;background:none;cursor:pointer;">Remove</button>
+        </div>
+      </div>
+    `;
+  });
+  document.getElementById('cartItems').innerHTML = cartHTML || '<p>Cart is empty</p>';
+  document.getElementById('cartTotal').innerText = `Total: $${total}`;
+}
+updateCartUI();
+
+// 5. Cart Toggle
+function toggleCart(){
+  document.getElementById('cartSidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+}
+
+// 6. Checkout - Stripe Test Mode
+function checkout(){
+  if(cart.length===0){alert('Cart is empty!'); return;}
+  alert('This is Stripe test mode. In real project, connect Stripe Checkout API here.\nTotal: $'+document.getElementById('cartTotal').innerText.split('$')[1]);
+  // Real: fetch('/create-checkout-session', {method:'POST', body:JSON.stringify({cart})})
+}
+</script>
+
+</body>
+</html>

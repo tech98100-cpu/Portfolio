@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Ember & Gold — Fine Dining</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--gold:#c9a84c;--dark:#1a1a1a;--charcoal:#2c2c2c;--light:#f5f0e8;--text:#e0d8c8}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',sans-serif;background:var(--dark);color:var(--text);overflow-x:hidden}
+
+  /* NAVBAR */
+  nav{position:fixed;top:0;width:100%;z-index:100;padding:1.2rem 5%;display:flex;justify-content:space-between;align-items:center;transition:all .4s ease;backdrop-filter:blur(0px)}
+  nav.scrolled{background:rgba(26,26,26,.95);backdrop-filter:blur(12px);box-shadow:0 2px 30px rgba(0,0,0,.5);padding:.9rem 5%}
+  .logo{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--gold);letter-spacing:2px;text-decoration:none}
+  .logo span{color:#fff}
+  .nav-links{display:flex;gap:2.5rem;list-style:none}
+  .nav-links a{color:var(--text);text-decoration:none;font-size:.85rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:500;position:relative;transition:color .3s}
+  .nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1px;background:var(--gold);transition:width .3s}
+  .nav-links a:hover{color:var(--gold)}
+  .nav-links a:hover::after{width:100%}
+  .nav-btn{background:var(--gold);color:#1a1a1a;padding:.55rem 1.4rem;border:none;font-size:.8rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;cursor:pointer;transition:all .3s}
+  .nav-btn:hover{background:#e8c05a;transform:translateY(-1px)}
+
+  /* HERO */
+  .hero{height:100vh;position:relative;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden}
+  .hero-bg{position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1600&q=80') center/cover no-repeat;transform:scale(1.05);animation:zoomOut 8s ease forwards}
+  @keyframes zoomOut{from{transform:scale(1.1)}to{transform:scale(1)}}
+  .hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.55) 0%,rgba(0,0,0,.7) 60%,rgba(26,26,26,1) 100%)}
+  .hero-content{position:relative;z-index:2;max-width:780px;padding:0 2rem}
+  .hero-tag{font-size:.75rem;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:1.2rem;opacity:0;animation:fadeUp .8s .3s forwards}
+  .hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.8rem,6vw,5.5rem);line-height:1.1;color:#fff;margin-bottom:1.4rem;opacity:0;animation:fadeUp .8s .5s forwards}
+  .hero h1 em{color:var(--gold);font-style:normal}
+  .hero p{font-size:1rem;color:rgba(255,255,255,.7);line-height:1.8;max-width:520px;margin:0 auto 2.5rem;opacity:0;animation:fadeUp .8s .7s forwards}
+  .hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;opacity:0;animation:fadeUp .8s .9s forwards}
+  .btn-primary{background:var(--gold);color:#1a1a1a;padding:.8rem 2.2rem;font-size:.85rem;letter-spacing:2px;text-transform:uppercase;font-weight:700;cursor:pointer;border:none;transition:all .3s}
+  .btn-primary:hover{background:#e8c05a;transform:translateY(-3px);box-shadow:0 10px 30px rgba(201,168,76,.3)}
+  .btn-outline{background:transparent;color:#fff;padding:.8rem 2.2rem;font-size:.85rem;letter-spacing:2px;text-transform:uppercase;font-weight:500;cursor:pointer;border:1px solid rgba(255,255,255,.4);transition:all .3s}
+  .btn-outline:hover{border-color:var(--gold);color:var(--gold);transform:translateY(-3px)}
+  .scroll-hint{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;opacity:0;animation:fadeIn 1s 1.5s forwards}
+  .scroll-hint span{font-size:.7rem;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.4)}
+  .scroll-line{width:1px;height:40px;background:linear-gradient(to bottom,rgba(255,255,255,.4),transparent);animation:scrollPulse 2s infinite}
+  @keyframes scrollPulse{0%,100%{opacity:.3;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.2)}}
+
+  /* MENU */
+  .menu{padding:7rem 5%;background:var(--dark)}
+  .section-header{text-align:center;margin-bottom:4rem}
+  .section-tag{font-size:.72rem;letter-spacing:4px;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:.8rem}
+  .section-header h2{font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3rem);color:#fff;margin-bottom:1rem}
+  .section-header p{color:rgba(255,255,255,.5);max-width:500px;margin:0 auto;line-height:1.8;font-size:.95rem}
+  .divider{width:60px;height:2px;background:var(--gold);margin:1.5rem auto 0}
+
+  .menu-tabs{display:flex;justify-content:center;gap:.5rem;margin-bottom:3.5rem;flex-wrap:wrap}
+  .tab{background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);padding:.6rem 1.6rem;font-size:.78rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .3s}
+  .tab.active,.tab:hover{background:var(--gold);border-color:var(--gold);color:#1a1a1a;font-weight:600}
+
+  .menu-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:2rem;max-width:1200px;margin:0 auto}
+  .menu-card{background:var(--charcoal);overflow:hidden;transition:transform .3s,box-shadow .3s;opacity:0;transform:translateY(30px)}
+  .menu-card.visible{opacity:1;transform:translateY(0);transition:opacity .6s ease,transform .6s ease,box-shadow .3s}
+  .menu-card:hover{transform:translateY(-8px);box-shadow:0 20px 50px rgba(0,0,0,.5)}
+  .card-img{height:200px;overflow:hidden;position:relative}
+  .card-img img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+  .menu-card:hover .card-img img{transform:scale(1.08)}
+  .card-badge{position:absolute;top:1rem;right:1rem;background:var(--gold);color:#1a1a1a;font-size:.65rem;padding:.3rem .7rem;letter-spacing:1px;font-weight:700;text-transform:uppercase}
+  .card-body{padding:1.5rem}
+  .card-body h3{font-family:'Playfair Display',serif;font-size:1.2rem;color:#fff;margin-bottom:.5rem}
+  .card-body p{font-size:.85rem;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:1rem}
+  .card-footer{display:flex;justify-content:space-between;align-items:center}
+  .price{font-size:1.1rem;color:var(--gold);font-weight:600;font-family:'Playfair Display',serif}
+  .order-btn{background:transparent;border:1px solid var(--gold);color:var(--gold);padding:.4rem 1rem;font-size:.72rem;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all .3s}
+  .order-btn:hover{background:var(--gold);color:#1a1a1a}
+
+  /* EXPERIENCE */
+  .experience{padding:7rem 5%;background:linear-gradient(135deg,#1a1208 0%,#2c2010 50%,#1a1a1a 100%);display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;max-width:1300px;margin:0 auto}
+  .exp-img{position:relative}
+  .exp-img img{width:100%;height:500px;object-fit:cover}
+  .exp-img::before{content:'';position:absolute;top:-15px;left:-15px;right:15px;bottom:15px;border:1px solid var(--gold);z-index:0;opacity:.4}
+  .exp-img img{position:relative;z-index:1}
+  .exp-text .section-header{text-align:left}
+  .exp-text .section-header p{margin:0}
+  .exp-text .divider{margin:1.5rem 0 0}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:3rem}
+  .stat{border-left:2px solid var(--gold);padding-left:1.2rem}
+  .stat-num{font-family:'Playfair Display',serif;font-size:2.2rem;color:var(--gold);line-height:1}
+  .stat-label{font-size:.78rem;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:.3rem}
+
+  /* FOOTER */
+  footer{background:#111;padding:4rem 5% 2rem;text-align:center}
+  .footer-logo{font-family:'Playfair Display',serif;font-size:2rem;color:var(--gold);letter-spacing:3px;margin-bottom:.5rem}
+  .footer-logo span{color:#fff}
+  .footer-tagline{font-size:.78rem;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:2.5rem}
+  .footer-links{display:flex;justify-content:center;gap:2.5rem;list-style:none;margin-bottom:2.5rem;flex-wrap:wrap}
+  .footer-links a{color:rgba(255,255,255,.4);text-decoration:none;font-size:.8rem;letter-spacing:1.5px;text-transform:uppercase;transition:color .3s}
+  .footer-links a:hover{color:var(--gold)}
+  .footer-info{display:flex;justify-content:center;gap:3rem;margin-bottom:2.5rem;flex-wrap:wrap}
+  .info-item{display:flex;flex-direction:column;gap:.3rem}
+  .info-label{font-size:.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold)}
+  .info-val{font-size:.88rem;color:rgba(255,255,255,.5)}
+  .footer-divider{width:100%;height:1px;background:rgba(255,255,255,.07);margin:2rem 0}
+  .footer-bottom{font-size:.75rem;color:rgba(255,255,255,.2);letter-spacing:1px}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(25px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+  @media(max-width:768px){
+    .nav-links{display:none}
+    .experience{grid-template-columns:1fr;gap:3rem}
+    .exp-img{display:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <a class="logo" href="#">Ember <span>&</span> Gold</a>
+  <ul class="nav-links">
+    <li><a href="#hero">Home</a></li>
+    <li><a href="#menu">Menu</a></li>
+    <li><a href="#experience">About</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <button class="nav-btn">Reserve</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <p class="hero-tag">Fine Dining Experience</p>
+    <h1>Where Every Dish Tells a <em>Story</em></h1>
+    <p>Crafted with passion, served with elegance. Discover the art of modern cuisine in an atmosphere of timeless sophistication.</p>
+    <div class="hero-btns">
+      <button class="btn-primary">Reserve a Table</button>
+      <button class="btn-outline">Explore Menu</button>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- MENU -->
+<section class="menu" id="menu">
+  <div class="section-header">
+    <span class="section-tag">Culinary Artistry</span>
+    <h2>Our Signature Menu</h2>
+    <p>Seasonal ingredients, masterful technique, and a touch of theatre on every plate.</p>
+    <div class="divider"></div>
+  </div>
+
+  <div class="menu-tabs">
+    <button class="tab active">All</button>
+    <button class="tab">Starters</button>
+    <button class="tab">Mains</button>
+    <button class="tab">Desserts</button>
+  </div>
+
+  <div class="menu-grid" id="menuGrid">
+    <!-- Starters -->
+    <div class="menu-card">
+      <div class="card-img">
+        <img src="https://iconiccollection.com/wp-content/uploads/sites/13779/2023/01/Truffle-Burrata-1600x1067.jpg" alt="Burrata"/>
+        <span class="card-badge">Starter</span>
+      </div>
+      <div class="card-body">
+        <h3>Truffle Burrata</h3>
+        <p>Creamy burrata with black truffle shavings, heirloom tomatoes, and aged balsamic reduction.</p>
+        <div class="card-footer"><span class="price">$18</span><button class="order-btn">Add to Order</button></div>
+      </div>
+    </div>
+    <div class="menu-card">
+      <div class="card-img">
+        <img src="https://images.unsplash.com/photo-1625944525533-473f1a3d54e7?w=600&q=80" alt="Scallops"/>
+        <span class="card-badge">Starter</span>
+      </div>
+      <div class="card-body">
+        <h3>Seared Scallops</h3>
+        <p>Pan-seared diver scallops with cauliflower purée, crispy capers, and lemon butter sauce.</p>
+        <div class="card-footer"><span class="price">$24</span><button class="order-btn">Add to Order</button></div>
+      </div>
+    </div>
+    <!-- Mains -->
+    <div class="menu-card">
+      <div class="card-img">
+        <img src="https://images.unsplash.com/photo-1558030006-450675393462?w=600&q=80" alt="Wagyu"/>
+        <span class="card-badge">Main</span>
+      </div>
+      <div class="card-body">
+        <h3>Wagyu Beef Tenderloin</h3>
+        <p>A5 Wagyu with roasted bone marrow, pomme purée, seasonal vegetables, and red wine jus.</p>
+        <div class="card-footer"><span class="price">$68</span><button class="order-btn">Add to Order</button></div>
+      </div>
+    </div>
+    <div class="menu-card">
+      <div class="card-img">
+        <img src="https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=600&q=80" alt="Salmon"/>
+        <span class="card-badge">Main</span>
+      </div>
+      <div class="card-body">
+        <h3>Pan-Roasted Salmon</h3>
+        <p>Atlantic salmon with pea purée, asparagus, fennel, and champagne beurre blanc.</p>
+        <div class="card-footer"><span class="price">$42</span><button class="order-btn">Add to Order</button></div>
+      </div>
+    </div>
+    <!-- Desserts -->
+    <div class="menu-card">
+      <div class="card-img">
+        <img src="https://images.unsplash.com/photo-1624353365286-3f8d62daad51?w=600&q=80" alt="Chocolate"/>
+        <span class="card-badge">Dessert</span>
+      </div>
+      <div class="card-body">
+        <h3>Valrhona Chocolate Sphere</h3>
+        <p>Dark chocolate dome with salted caramel, vanilla bean ice cream, and gold leaf finish.</p>
+        <div class="card-footer"><span class="price">$16</span><button class="order-btn">Add to Order</button></div>
+      </div>
+    </div>
+    <div class="menu-card">
+      <div class="card-img">
+        <img src="https://images.unsplash.com/photo-1470324161839-ce2bb6fa6bc3?w=600&q=80" alt="Crème Brûlée"/>
+        <span class="card-badge">Dessert</span>
+      </div>
+      <div class="card-body">
+        <h3>Lavender Crème Brûlée</h3>
+        <p>Classic French custard infused with Provençal lavender, topped with a perfectly torched crust.</p>
+        <div class="card-footer"><span class="price">$14</span><button class="order-btn">Add to Order</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section style="background:linear-gradient(135deg,#120f08 0%,#1f1a0e 50%,#1a1a1a 100%);padding:7rem 5%">
+  <div class="experience" id="experience">
+    <div class="exp-img">
+      <img src="https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?w=800&q=80" alt="Restaurant interior"/>
+    </div>
+    <div class="exp-text">
+      <div class="section-header">
+        <span class="section-tag">Our Story</span>
+        <h2>Crafted for Those Who Appreciate Excellence</h2>
+        <p>Since 2010, Ember & Gold has been a sanctuary for lovers of fine food and elegant ambiance. Each dish is composed like a piece of art — balanced, intentional, unforgettable.</p>
+        <div class="divider"></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="stat-num">14+</div><div class="stat-label">Years of Excellence</div></div>
+        <div class="stat"><div class="stat-num">3</div><div class="stat-label">Michelin Stars</div></div>
+        <div class="stat"><div class="stat-num">40+</div><div class="stat-label">Signature Dishes</div></div>
+        <div class="stat"><div class="stat-num">98%</div><div class="stat-label">Guest Satisfaction</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="contact">
+  <div class="footer-logo">Ember <span>&</span> Gold</div>
+  <div class="footer-tagline">Fine Dining · Est. 2010</div>
+  <ul class="footer-links">
+    <li><a href="#">Home</a></li>
+    <li><a href="#">Menu</a></li>
+    <li><a href="#">Reservations</a></li>
+    <li><a href="#">Private Dining</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+  <div class="footer-info">
+    <div class="info-item"><span class="info-label">Location</span><span class="info-val">12 Golden Lane, New York, NY</span></div>
+    <div class="info-item"><span class="info-label">Hours</span><span class="info-val">Tue–Sun: 6:00 PM – 11:00 PM</span></div>
+    <div class="info-item"><span class="info-label">Reservations</span><span class="info-val">+1 (212) 555-0190</span></div>
+  </div>
+  <div class="footer-divider"></div>
+  <div class="footer-bottom">© 2026 Ember & Gold. All rights reserved.</div>
+</footer>
+
+<script>
+  // Sticky navbar
+  window.addEventListener('scroll',()=>{
+    document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>50)
+  })
+
+  // Scroll-triggered card animations
+  const cards=document.querySelectorAll('.menu-card')
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach((e,i)=>{
+      if(e.isIntersecting){
+        setTimeout(()=>e.target.classList.add('visible'),i*120)
+        obs.unobserve(e.target)
+      }
+    })
+  },{threshold:.15})
+  cards.forEach(c=>obs.observe(c))
+
+  // Menu tabs filter
+  const tabs=document.querySelectorAll('.tab')
+  tabs.forEach(t=>t.addEventListener('click',()=>{
+    tabs.forEach(x=>x.classList.remove('active'))
+    t.classList.add('active')
+    const filter=t.textContent.toLowerCase()
+    cards.forEach(c=>{
+      const badge=c.querySelector('.card-badge').textContent.toLowerCase()
+      c.style.display=(filter==='all'||badge===filter.replace('s',''))?'block':'none'
+    })
+  }))
+</script>
+</body>
+</html>

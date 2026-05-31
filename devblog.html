@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DevBlog</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#060612;--card:#0e0e20;--border:rgba(255,255,255,.07);--text:#e2e8f0;--muted:#64748b}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ANIMATED CANVAS BG */
+#bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* HEADER */
+header{position:sticky;top:0;z-index:100;background:rgba(6,6,18,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:1rem 5%;display:flex;justify-content:space-between;align-items:center}
+.logo{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;background:linear-gradient(135deg,#6366f1,#ec4899,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header-right{display:flex;align-items:center;gap:1rem}
+.search-wrap{position:relative}
+.search-box{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:12px;padding:.5rem 1rem .5rem 2.2rem;color:#e2e8f0;font-size:.83rem;outline:none;width:200px;transition:.3s}
+.search-box:focus{border-color:#6366f1;width:240px}
+.search-icon{position:absolute;left:.7rem;top:50%;transform:translateY(-50%);font-size:.85rem;pointer-events:none}
+
+/* HERO */
+.hero{position:relative;z-index:1;padding:5rem 5% 3rem;text-align:center}
+.hero-tag{display:inline-flex;align-items:center;gap:.5rem;background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.3);color:#818cf8;padding:.4rem 1.1rem;border-radius:999px;font-size:.75rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:1.5rem;animation:fadeUp .6s ease both}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(2.2rem,5vw,4rem);font-weight:800;line-height:1.1;margin-bottom:1rem;animation:fadeUp .7s .15s both}
+.hero h1 span{background:linear-gradient(135deg,#6366f1,#ec4899,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--muted);font-size:1rem;max-width:480px;margin:0 auto 2rem;line-height:1.8;animation:fadeUp .7s .3s both}
+.tags-row{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;animation:fadeUp .7s .45s both}
+.tag-pill{border:1px solid var(--border);color:var(--muted);padding:.4rem 1rem;border-radius:999px;font-size:.78rem;cursor:pointer;transition:.3s;font-weight:500;background:rgba(255,255,255,.03)}
+.tag-pill:hover{transform:translateY(-2px)}
+.tag-pill.active{background:rgba(99,102,241,.15);border-color:#6366f1;color:#818cf8}
+
+/* CONTAINER */
+.container{max-width:1100px;margin:0 auto;padding:2rem 5%;position:relative;z-index:1}
+.section-label{font-size:.72rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:1.2rem;display:flex;align-items:center;gap:.7rem}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* FEATURED */
+.featured-wrap{margin-bottom:3rem}
+.featured-card{display:grid;grid-template-columns:1.1fr 1fr;border-radius:24px;overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:.4s;background:var(--card);animation:fadeUp .7s .2s both}
+.featured-card:hover{transform:translateY(-6px);border-color:rgba(99,102,241,.5);box-shadow:0 30px 60px rgba(99,102,241,.15)}
+.feat-img{height:300px;overflow:hidden;position:relative}
+.feat-img img{width:100%;height:100%;object-fit:cover;transition:transform .6s}
+.featured-card:hover .feat-img img{transform:scale(1.06)}
+.feat-img-overlay{position:absolute;inset:0;background:linear-gradient(to right,transparent,rgba(14,14,32,.8))}
+.feat-body{padding:2.5rem;display:flex;flex-direction:column;justify-content:center}
+.post-cat{display:inline-block;font-size:.68rem;font-weight:700;padding:.25rem .8rem;border-radius:6px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:1rem}
+.cat-react{background:rgba(99,102,241,.15);color:#818cf8;border:1px solid rgba(99,102,241,.3)}
+.cat-css{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.25)}
+.cat-js{background:rgba(6,182,212,.12);color:#22d3ee;border:1px solid rgba(6,182,212,.25)}
+.cat-design{background:rgba(236,72,153,.12);color:#f472b6;border:1px solid rgba(236,72,153,.25)}
+.cat-node{background:rgba(16,185,129,.12);color:#34d399;border:1px solid rgba(16,185,129,.25)}
+.feat-body h2{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:#fff;line-height:1.3;margin-bottom:.8rem}
+.feat-body p{color:var(--muted);font-size:.88rem;line-height:1.8;margin-bottom:1.5rem}
+.post-meta{display:flex;align-items:center;gap:.8rem;font-size:.75rem;color:var(--muted)}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#ec4899);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:#fff;flex-shrink:0}
+.read-more{margin-top:1.5rem;display:inline-flex;align-items:center;gap:.5rem;color:#818cf8;font-size:.82rem;font-weight:600;transition:.3s}
+.featured-card:hover .read-more{gap:1rem}
+
+/* POSTS GRID */
+.posts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem}
+.post-card{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;cursor:pointer;transition:.4s;opacity:0;transform:translateY(20px)}
+.post-card.visible{opacity:1;transform:translateY(0);transition:opacity .5s ease,transform .5s ease,border-color .3s,box-shadow .3s}
+.post-card:hover{transform:translateY(-8px) !important}
+.post-card.hc1:hover{border-color:rgba(99,102,241,.5);box-shadow:0 20px 50px rgba(99,102,241,.15)}
+.post-card.hc2:hover{border-color:rgba(251,191,36,.4);box-shadow:0 20px 50px rgba(251,191,36,.1)}
+.post-card.hc3:hover{border-color:rgba(6,182,212,.4);box-shadow:0 20px 50px rgba(6,182,212,.1)}
+.post-card.hc4:hover{border-color:rgba(236,72,153,.4);box-shadow:0 20px 50px rgba(236,72,153,.1)}
+.post-card.hc5:hover{border-color:rgba(16,185,129,.4);box-shadow:0 20px 50px rgba(16,185,129,.1)}
+.post-img{height:160px;overflow:hidden;position:relative}
+.post-img img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.post-card:hover .post-img img{transform:scale(1.1)}
+.post-body{padding:1.3rem}
+.post-body h3{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#fff;margin:.5rem 0 .4rem;line-height:1.4}
+.post-body p{font-size:.78rem;color:var(--muted);line-height:1.7;margin-bottom:.9rem}
+.post-footer{display:flex;justify-content:space-between;align-items:center}
+.post-meta-sm{display:flex;align-items:center;gap:.5rem;font-size:.7rem;color:var(--muted)}
+.like-btn{background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:.3s;padding:.2rem .5rem;border-radius:6px}
+.like-btn:hover{color:#f472b6;background:rgba(236,72,153,.1)}
+.like-btn.liked{color:#f472b6}
+
+/* ARTICLE VIEW */
+.page{position:relative;z-index:1}
+.page.hidden{display:none}
+.article-view{max-width:740px;margin:0 auto;padding:3rem 5%}
+.back-btn{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--muted);padding:.55rem 1.2rem;border-radius:10px;font-size:.8rem;cursor:pointer;margin-bottom:2.5rem;transition:.3s}
+.back-btn:hover{border-color:#6366f1;color:#818cf8;transform:translateX(-3px)}
+.article-hero-img{width:100%;height:300px;object-fit:cover;border-radius:18px;margin-bottom:2rem;border:1px solid var(--border)}
+.article-title{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,4vw,2.6rem);font-weight:800;color:#fff;line-height:1.2;margin:1rem 0}
+.article-meta-bar{display:flex;align-items:center;gap:1rem;font-size:.78rem;color:var(--muted);padding:1.2rem 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:2rem}
+.article-content p{color:#94a3b8;line-height:1.95;margin-bottom:1.3rem;font-size:.95rem}
+.article-content h3{font-family:'Syne',sans-serif;font-size:1.25rem;color:#fff;margin:2rem 0 .8rem;font-weight:800}
+.article-content code{background:rgba(99,102,241,.15);color:#a5b4fc;padding:.15rem .5rem;border-radius:5px;font-size:.84rem;border:1px solid rgba(99,102,241,.2)}
+
+/* READING BAR */
+.reading-bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#6366f1,#ec4899,#06b6d4);z-index:999;width:0;transition:width .1s}
+
+/* TOAST */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:linear-gradient(135deg,#6366f1,#ec4899);color:#fff;padding:.75rem 1.5rem;border-radius:12px;font-size:.83rem;font-weight:600;z-index:400;transition:.4s;white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@media(max-width:768px){.featured-card{grid-template-columns:1fr}.feat-img{height:180px}.feat-img-overlay{display:none}}
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+<div class="reading-bar" id="readingBar"></div>
+
+<header>
+  <div class="logo">DevBlog.</div>
+  <div class="header-right">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-box" placeholder="Search articles..." oninput="searchPosts(this.value)"/>
+    </div>
+  </div>
+</header>
+
+<!-- HOME PAGE -->
+<div class="page" id="homePage">
+  <div class="hero">
+    <div class="hero-tag">✦ Dev Articles & Insights</div>
+    <h1>Where <span>Code Meets</span><br/>Creativity</h1>
+    <p>Deep dives, tutorials, and insights from a web developer who loves building things that matter.</p>
+    <div class="tags-row">
+      <span class="tag-pill active" onclick="filterTag('all',this)">All</span>
+      <span class="tag-pill" onclick="filterTag('React',this)">⚛️ React</span>
+      <span class="tag-pill" onclick="filterTag('CSS',this)">🎨 CSS</span>
+      <span class="tag-pill" onclick="filterTag('JavaScript',this)">⚡ JavaScript</span>
+      <span class="tag-pill" onclick="filterTag('Design',this)">✏️ Design</span>
+      <span class="tag-pill" onclick="filterTag('Node.js',this)">🟢 Node.js</span>
+    </div>
+  </div>
+  <div class="container">
+    <div class="featured-wrap" id="featuredWrap">
+      <div class="section-label">🔥 Featured Post</div>
+      <div class="featured-card" onclick="readPost(0)">
+        <div class="feat-img">
+          <img src="https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&q=80" alt="React"/>
+          <div class="feat-img-overlay"></div>
+        </div>
+        <div class="feat-body">
+          <span class="post-cat cat-react">⚛️ React</span>
+          <h2>Mastering React Hooks in 2026</h2>
+          <p>A comprehensive guide to useState, useEffect, useContext and custom hooks to build powerful React apps.</p>
+          <div class="post-meta"><div class="avatar">SK</div><span>Sara Khan</span><span>·</span><span>8 min read</span><span>·</span><span>May 2026</span></div>
+          <div class="read-more">Read Article →</div>
+        </div>
+      </div>
+    </div>
+    <div class="section-label">📚 Latest Articles</div>
+    <div class="posts-grid" id="postsGrid"></div>
+  </div>
+</div>
+
+<!-- ARTICLE PAGE -->
+<div class="page hidden" id="articlePage">
+  <div class="article-view">
+    <button class="back-btn" onclick="goBack()">← Back to Blog</button>
+    <div id="articleContent"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ---- ANIMATED CANVAS BACKGROUND ----
+const canvas=document.getElementById('bgCanvas');
+const ctx=canvas.getContext('2d');
+let W,H,particles=[];
+
+function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight}
+resize();
+window.addEventListener('resize',resize);
+
+const colors=['#6366f1','#ec4899','#06b6d4','#8b5cf6','#f59e0b'];
+for(let i=0;i<60;i++){
+  particles.push({
+    x:Math.random()*window.innerWidth,
+    y:Math.random()*window.innerHeight,
+    r:Math.random()*2+.5,
+    dx:(Math.random()-.5)*.4,
+    dy:(Math.random()-.5)*.4,
+    color:colors[Math.floor(Math.random()*colors.length)],
+    alpha:Math.random()*.5+.2
+  });
+}
+
+function drawBg(){
+  ctx.clearRect(0,0,W,H);
+  // Draw gradient orbs
+  const orbs=[
+    {x:W*.15,y:H*.2,r:250,c:'rgba(99,102,241,.07)'},
+    {x:W*.85,y:H*.4,r:200,c:'rgba(236,72,153,.06)'},
+    {x:W*.5,y:H*.85,r:280,c:'rgba(6,182,212,.05)'},
+  ];
+  orbs.forEach(o=>{
+    const g=ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r);
+    g.addColorStop(0,o.c);g.addColorStop(1,'transparent');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(o.x,o.y,o.r,0,Math.PI*2);ctx.fill();
+  });
+  // Particles
+  particles.forEach(p=>{
+    p.x+=p.dx;p.y+=p.dy;
+    if(p.x<0)p.x=W;if(p.x>W)p.x=0;
+    if(p.y<0)p.y=H;if(p.y>H)p.y=0;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle=p.color;
+    ctx.globalAlpha=p.alpha;
+    ctx.fill();
+    ctx.globalAlpha=1;
+  });
+  // Connect nearby particles
+  particles.forEach((a,i)=>{
+    particles.slice(i+1).forEach(b=>{
+      const d=Math.hypot(a.x-b.x,a.y-b.y);
+      if(d<100){
+        ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
+        ctx.strokeStyle=`rgba(99,102,241,${.12*(1-d/100)})`;
+        ctx.lineWidth=.5;ctx.stroke();
+      }
+    });
+  });
+  requestAnimationFrame(drawBg);
+}
+drawBg();
+
+// ---- BLOG DATA ----
+const posts=[
+  {id:0,img:'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&q=80',tag:'React',cat:'cat-react',hc:'hc1',title:'Mastering React Hooks in 2026',desc:'A comprehensive guide to useState, useEffect and custom hooks.',author:'Sara Khan',time:'8 min',date:'May 2026',likes:42,
+    content:`<h3>Why Hooks Changed Everything</h3><p>When React introduced hooks in version 16.8, it completely transformed how we write React components. Gone are the days of class-based components for stateful logic.</p><h3>useState — The Basics</h3><p>The <code>useState</code> hook lets you add state to functional components. It returns an array with the current state value and a function to update it. Every time state changes, React re-renders the component with the new value.</p><h3>useEffect — Side Effects Made Simple</h3><p>The <code>useEffect</code> hook is your go-to for side effects: fetching data, subscriptions, or manually changing the DOM. Think of it as componentDidMount and componentDidUpdate combined.</p><h3>Custom Hooks — The Real Power</h3><p>Custom hooks let you extract component logic into reusable functions. If you find yourself writing the same stateful logic in multiple components, it's time to create a custom hook. The convention is to prefix the name with "use".</p>`},
+  {id:1,img:'https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=600&q=80',tag:'CSS',cat:'cat-css',hc:'hc2',title:'CSS Grid vs Flexbox: When to Use Which',desc:'Stop guessing — the definitive guide to choosing the right layout tool.',author:'Sara Khan',time:'6 min',date:'Apr 2026',likes:38,
+    content:`<h3>The Great Layout Debate</h3><p>CSS Grid and Flexbox are both powerful layout tools, but they solve different problems. Understanding when to use each one is a fundamental skill for any web developer.</p><h3>Flexbox — One Dimension</h3><p>Flexbox is designed for one-dimensional layouts — either a row or a column. It excels at distributing space among items in a single direction and aligning items within a container.</p><h3>CSS Grid — Two Dimensions</h3><p>Grid is designed for two-dimensional layouts — rows AND columns simultaneously. It's ideal for page-level layouts, card grids, and any layout where you need control over both axes.</p><h3>The Golden Rule</h3><p>If you're thinking about rows only — reach for Flexbox. If you're thinking about rows AND columns — reach for Grid. Great layouts often use both together.</p>`},
+  {id:2,img:'https://images.unsplash.com/photo-1555099962-4199c345e5dd?w=600&q=80',tag:'JavaScript',cat:'cat-js',hc:'hc3',title:'JavaScript Async/Await: A Visual Guide',desc:'Master asynchronous JavaScript once and for all with clear examples.',author:'Sara Khan',time:'7 min',date:'Apr 2026',likes:55,
+    content:`<h3>The Problem with Callbacks</h3><p>Before promises and async/await, JavaScript relied on callbacks for asynchronous operations. This led to deeply nested code known as "callback hell" — hard to read, debug, and maintain.</p><h3>Promises Arrived</h3><p>Promises gave us a cleaner way to handle async operations with <code>.then()</code> and <code>.catch()</code>. They represented a value that might not be available yet.</p><h3>Async/Await — The Game Changer</h3><p>Async/await is syntactic sugar built on top of promises. It lets you write asynchronous code that looks and behaves like synchronous code — dramatically easier to understand and maintain.</p><h3>Error Handling</h3><p>Wrap your <code>await</code> calls in a <code>try/catch</code> block to handle errors gracefully — just like you would with synchronous code.</p>`},
+  {id:3,img:'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600&q=80',tag:'Design',cat:'cat-design',hc:'hc4',title:'10 UI Design Principles Every Dev Should Know',desc:'Great code deserves great design. Here are the fundamentals.',author:'Sara Khan',time:'5 min',date:'Mar 2026',likes:29,
+    content:`<h3>Why Developers Should Care About Design</h3><p>You don't need to become a full-time designer — but understanding core design principles will make you dramatically more effective at building interfaces users love.</p><h3>1. Visual Hierarchy</h3><p>Guide users' eyes through your interface by making the most important elements the most visually prominent. Use size, color, contrast, and spacing to establish clear hierarchy.</p><h3>2. White Space is Your Friend</h3><p>Don't fear empty space. Whitespace gives your design room to breathe, improves readability, and makes important elements stand out. Cluttered interfaces overwhelm users.</p><h3>3. Consistency Builds Trust</h3><p>Consistent colors, fonts, spacing, and interaction patterns reduce the cognitive load on users. When everything behaves predictably, users feel confident navigating your interface.</p>`},
+  {id:4,img:'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80',tag:'Node.js',cat:'cat-node',hc:'hc5',title:'Building REST APIs with Node.js & Express',desc:'Step-by-step guide to building production-ready APIs.',author:'Sara Khan',time:'10 min',date:'Mar 2026',likes:47,
+    content:`<h3>Why Node.js for APIs?</h3><p>Node.js is an excellent choice for building REST APIs. Its non-blocking, event-driven architecture makes it highly efficient for I/O-intensive operations — exactly what APIs do most.</p><h3>Setting Up Express</h3><p>Express is the most popular web framework for Node.js. It's minimal and flexible, providing a thin layer of fundamental web application features without hiding the Node.js features you know.</p><h3>RESTful Route Design</h3><p>Use HTTP methods meaningfully: GET to fetch, POST to create, PUT to update, DELETE to remove. Use nouns not verbs in your URLs.</p><h3>Middleware — The Secret Weapon</h3><p>Middleware functions are the backbone of Express. Use them for authentication, logging, error handling, and more. They have access to both the request and response objects.</p>`},
+  {id:5,img:'https://images.unsplash.com/photo-1484788984921-03950022c9ef?w=600&q=80',tag:'Design',cat:'cat-design',hc:'hc4',title:'Dark Mode Design: Best Practices',desc:'How to implement beautiful and accessible dark mode in your apps.',author:'Sara Khan',time:'4 min',date:'Feb 2026',likes:33,
+    content:`<h3>Dark Mode is More Than Inverting Colors</h3><p>Many developers make the mistake of implementing dark mode by simply inverting their light theme colors. This almost always produces poor results — muddy colors, lost hierarchy, and accessibility issues.</p><h3>Use True Dark, Not Pure Black</h3><p>Pure black against white text creates extreme contrast that causes eye strain. Instead, use very dark grays like <code>#0f0f17</code> as your background. It's gentler on the eyes.</p><h3>Elevation Through Lightness</h3><p>In dark mode, use lighter shades to indicate elevation. Cards should be slightly lighter than the background, modals lighter still. This maintains visual hierarchy without shadows.</p><h3>Test Systematically</h3><p>Test your dark mode across different devices and display calibrations. What looks great on your high-end monitor may look washed out on a cheaper screen.</p>`},
+];
+
+let likedPosts={};
+let currentFilter='all';
+
+function renderPosts(filter='all',query=''){
+  const grid=document.getElementById('postsGrid');
+  const fw=document.getElementById('featuredWrap');
+  fw.style.display=(filter==='all'&&!query)?'block':'none';
+  let filtered=posts.slice(1);
+  if(filter!=='all') filtered=filtered.filter(p=>p.tag===filter);
+  if(query) filtered=filtered.filter(p=>p.title.toLowerCase().includes(query)||p.tag.toLowerCase().includes(query));
+  grid.innerHTML=filtered.map(p=>`
+    <div class="post-card ${p.hc}" onclick="readPost(${p.id})">
+      <div class="post-img">
+        <img src="${p.img}" alt="${p.title}" onerror="this.src='https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=600&q=80'"/>
+      </div>
+      <div class="post-body">
+        <span class="post-cat ${p.cat}">${p.tag}</span>
+        <h3>${p.title}</h3>
+        <p>${p.desc}</p>
+        <div class="post-footer">
+          <div class="post-meta-sm"><div class="avatar" style="width:22px;height:22px;font-size:.6rem">SK</div><span>${p.time} read</span></div>
+          <button class="like-btn ${likedPosts[p.id]?'liked':''}" onclick="event.stopPropagation();toggleLike(${p.id},this)">
+            ${likedPosts[p.id]?'❤️':'🤍'} ${p.likes+(likedPosts[p.id]?1:0)}
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  setTimeout(()=>{
+    document.querySelectorAll('.post-card').forEach((c,i)=>{
+      setTimeout(()=>c.classList.add('visible'),i*100);
+    });
+  },50);
+}
+
+function filterTag(tag,btn){
+  currentFilter=tag;
+  document.querySelectorAll('.tag-pill').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  renderPosts(tag);
+}
+
+function searchPosts(q){renderPosts(currentFilter,q.toLowerCase())}
+
+function toggleLike(id,btn){
+  likedPosts[id]=!likedPosts[id];
+  btn.className='like-btn'+(likedPosts[id]?' liked':'');
+  btn.innerHTML=`${likedPosts[id]?'❤️':'🤍'} ${posts[id].likes+(likedPosts[id]?1:0)}`;
+  showToast(likedPosts[id]?'❤️ Added to favorites!':'🤍 Removed from favorites');
+}
+
+function readPost(id){
+  const p=posts[id];
+  document.getElementById('articleContent').innerHTML=`
+    <img class="article-hero-img" src="${p.img}" alt="${p.title}" onerror="this.style.display='none'"/>
+    <span class="post-cat ${p.cat}">${p.tag}</span>
+    <div class="article-title">${p.title}</div>
+    <div class="article-meta-bar">
+      <div class="avatar">SK</div><span>${p.author}</span><span>·</span>
+      <span>${p.time} read</span><span>·</span><span>${p.date}</span>
+    </div>
+    <div class="article-content">${p.content}</div>
+  `;
+  document.getElementById('homePage').classList.add('hidden');
+  document.getElementById('articlePage').classList.remove('hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+  window.addEventListener('scroll',updateReadingBar);
+}
+
+function goBack(){
+  document.getElementById('homePage').classList.remove('hidden');
+  document.getElementById('articlePage').classList.add('hidden');
+  document.getElementById('readingBar').style.width='0';
+  window.removeEventListener('scroll',updateReadingBar);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function updateReadingBar(){
+  const el=document.getElementById('articlePage');
+  const total=document.body.scrollHeight-window.innerHeight;
+  const pct=total>0?(window.scrollY/total)*100:0;
+  document.getElementById('readingBar').style.width=Math.min(pct,100)+'%';
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+renderPosts();
+</script>
+</body>
+</html>
