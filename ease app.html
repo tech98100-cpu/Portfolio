@@ -157,8 +157,7 @@ function addToCart(id){
   if(existing) existing.qty++;
   else cart.push({...p,qty:1});
   updateCart();
-  showToast(`${p.emoji} ${p.name} added to cart!`);
-}
+showToast(`${p.name} added to cart!`);}
 
 function removeFromCart(id){
   cart=cart.filter(x=>x.id!==id);
@@ -175,7 +174,7 @@ function updateCart(){
   } else {
     itemsEl.innerHTML=cart.map(i=>`
       <div class="cart-item">
-        <div class="cart-item-img">${i.emoji}</div>
+<div class="cart-item-img">🛍️</div>
         <div class="cart-item-info">
           <h4>${i.name} x${i.qty}</h4>
           <p>$${(i.price*i.qty).toFixed(2)}</p>
